@@ -7,6 +7,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
+const cookieParser = require('cookie-parser');
+const e = require("express");
+app.use(cookieParser());
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
@@ -25,13 +29,11 @@ app.get("/", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/hello", (req, res) => {
-  const templateVars = { greeting: "Hello World!" };
-  res.render("hello_world", templateVars);
-});
-
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -68,11 +70,21 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
+app.post("/login" , (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+app.post("/logout" , (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
 const generateRandomString = function() {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
