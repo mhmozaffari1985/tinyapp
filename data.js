@@ -18,11 +18,15 @@ module.exports = {
   urlDatabase: {
     b6UTxQ: {
       longURL: "https://www.tsn.ca",
-      userID: "user3RandomID"
+      createdDate:'2021-07-08T20:53:30',
+      userID: "user3RandomID",
+      visited: {}
     },
     i3BoGr: {
       longURL: "https://www.google.ca",
-      userID: "userRandomID"
+      createdDate:'2021-07-08T20:53:30',
+      userID: "userRandomID",
+      visited: {}
     }
   },
 

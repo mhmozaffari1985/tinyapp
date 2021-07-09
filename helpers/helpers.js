@@ -45,15 +45,40 @@ const createUserURLS = function(urlDatabase, userID) {
   const userURLS = {};
   for (const urlID in urlDatabase) {
     if (urlDatabase[urlID].userID === userID) {
-      userURLS[urlID] = {longURL:urlDatabase[urlID].longURL, userID: userID};
+      userURLS[urlID] = {longURL:urlDatabase[urlID].longURL, userID: userID,  createdDate: urlDatabase[urlID].createdDate};
     }
   }
   return userURLS;
 };
 
+const listVisitors = (urlID, urlDatabase) => {
+  const visitorsList = [];
+  if (urlDatabase[urlID]) {
+    for (const visitor in urlDatabase[urlID].visited) {
+      visitorsList.push(visitor);
+    }
+  }
+  return visitorsList;
+};
+
+const listVisits = (urlID, urlDatabase) => {
+  const visitsList = [];
+  if (urlDatabase[urlID]) {
+    for (const visitor in urlDatabase[urlID].visited) {
+      for (const visit of urlDatabase[urlID].visited[visitor]) {
+        visitsList.push({[visitor] : visit});
+      }
+    }
+  }
+  return visitsList;
+};
+
+
 module.exports = {
   generateRandomString,
   checkUserPassword,
   checkUserExist,
-  createUserURLS
+  createUserURLS,
+  listVisitors,
+  listVisits
 };

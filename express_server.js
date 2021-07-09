@@ -12,6 +12,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
+const moment = require('moment-timezone');
 
 //==========>                       Import Modules                       <==========//
 const {
@@ -22,7 +23,9 @@ const {
   generateRandomString,
   checkUserPassword,
   checkUserExist,
-  createUserURLS
+  createUserURLS,
+  listVisitors,
+  listVisits
 } = require("./helpers/helpers");
 const generateAuthenticator = require('./helpers/authentication');
 
@@ -63,7 +66,8 @@ app.get("/urls", (req, res) => {
   const userURLS = createUserURLS(urlDatabase, userID);
   const templateVars = {
     user: req.session.email,
-    urls: userURLS
+    urls: userURLS,
+    moment: moment
   };
   res.render("urls_index", templateVars);
 });
@@ -71,7 +75,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const user = checkUserExist(users, req.session.email);
   console.log(user + "end");
-  urlDatabase[generateRandomString()] = {longURL : req.body.longURL,  userID: user};
+  urlDatabase[generateRandomString()] = {longURL : req.body.longURL, createdDate: new Date(), userID: user, visited: {}};
   res.redirect("/urls");
 });
 
@@ -86,7 +90,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: req.session.email,
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    url: urlDatabase[req.params.shortURL],
+    uniqVisitors: listVisitors(req.params.shortURL,urlDatabase).length,
+    totalVisits: listVisits(req.params.shortURL,urlDatabase).length,
+    moment: moment
   };
   res.render("urls_show", templateVars);
 });
@@ -96,7 +103,10 @@ app.put("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: req.session.email,
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    url: urlDatabase[req.params.shortURL],
+    uniqVisitors: listVisitors(req.params.shortURL,urlDatabase).length,
+    totalVisits: listVisits(req.params.shortURL,urlDatabase).length,
+    moment: moment
   };
   res.render("urls_show", templateVars);
 });
@@ -107,8 +117,35 @@ app.delete("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  // const longURL = urlDatabase[req.params.shortURL].longURL;
+  // res.redirect(longURL);
+
+  const shortURL = req.params.shortURL;
+
+  // Make sure the user has a guestID cookie
+  // Generates one if they don't
+  const guestCookie = req.cookies['guestId'];
+  const guestId = guestCookie || generateRandomString();
+  if (!guestCookie) {
+    res.cookie('guestId',guestId);
+  }
+
+  if (urlDatabase[shortURL]) {
+    // Increment visits
+    if (!urlDatabase[shortURL].visited[guestId]) {
+      urlDatabase[shortURL].visited[guestId] = [];
+    }
+    urlDatabase[shortURL].visited[guestId].push(new Date());
+
+    // Page redirection
+    const longURL = urlDatabase[shortURL].longURL;
+    res.redirect(longURL);
+  } else {
+    const user = users[req.session.userId] || '';
+    const error = "The shortURL you're trying to access doesn't exist.";
+    const templateVars = {user, error};
+    res.render('404',templateVars);
+  }
 });
 
 
