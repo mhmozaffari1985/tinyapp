@@ -29,7 +29,7 @@
             <td><a href="/urls/<%= url %>"><%= url %></a></td>
             <td><%= urls[url].longURL %></td>
             <td><form method="GET" action="/urls/<%= url %>"><input type="submit" value="Edit" style="color:blue; border-color: blue; background-color: white;"></form></td>
-            <td><form method="POST" action="/urls/<%= url %>/delete"><input type="submit" value="Delete" style="color:red; border-color: red; background-color: white;"></form></td>
+            <td><form method="POST" action="/urls/<%= url %>?_method=DELETE"><input type="submit" value="Delete" style="color:red; border-color: red; background-color: white;"></form></td>
           </tr>
         <% } %>
       </tbody>

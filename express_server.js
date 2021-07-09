@@ -11,6 +11,7 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
+const methodOverride = require('method-override');
 
 //==========>                       Import Modules                       <==========//
 const {
@@ -42,6 +43,7 @@ app.use(cookieSession({
   keys: ["secretsecretIgotAsecret", "SuiteMadameBlue"]
 }));
 app.use('/', generateAuthenticator(users));
+app.use(methodOverride('_method'));
 
 //==========>                        Start Point                         <==========//
 app.listen(PORT, () => {
@@ -89,7 +91,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   const templateVars = {
     user: req.session.email,
@@ -99,7 +101,7 @@ app.post("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
